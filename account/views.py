@@ -23,7 +23,7 @@ class ValidatePhoneSendOTP(APIView):
 
             else:
                 key = send_otp(phone)
-                print(key)
+                print('The OTP is: ',key)
 
                 if key:
                     old_key = PhoneOTP.objects.filter(phone__iexact=phone)
@@ -118,7 +118,6 @@ class Register(APIView):
 
     def post(self, request, *args, **kwargs):
         phone = request.data.get('phone', False)
-        name = request.data.get('name', False)
         password = request.data.get('password', False)
 
         if phone and password:
@@ -129,18 +128,18 @@ class Register(APIView):
 
                 if validated:
                     data = {
-                        'name': name,
+                        'phone': phone,
                         'password': password,
                     }
 
                     serializer = CreateUserSerializer(data=data)
-
-                    if serializer.is_valid(raise_exception=True):
-                        serializer.save()
-                        return Response({
-                            'status': True,
-                            'detail': 'Accont Created'
-                        })
+                    serializer.is_valid(raise_exception=True)
+                    old_phn.delete()
+                    serializer.save()
+                    return Response({
+                        'status': True,
+                        'detail': 'Accont Created'
+                    })
 
                 else:
                     return Response({
