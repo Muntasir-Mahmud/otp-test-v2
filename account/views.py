@@ -1,11 +1,10 @@
+import random
+
 from django.shortcuts import render, get_object_or_404
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
- 
-from .models import User
-
-import random
+from .models import User, PhoneOTP
 
 
 class ValidatePhoneSendOTP(APIView):
@@ -23,8 +22,37 @@ class ValidatePhoneSendOTP(APIView):
 
             else:
                 key = send_otp(phone)
+                print(key)
+
                 if key:
-                    pass
+                    old_key = PhoneOTP.objects.filter(phone__iexact=phone)
+                    
+                    if old_key.exists():
+                        old_key = old_key.first()
+                        count = old_key.count
+                        if count > 10:
+                            return Response({
+                                'status': False,
+                                'detail': 'Sending OTP error. LIMIT EXCEEDED'
+                            })
+
+                        old_key.count = count + 1
+                        old_key.save()
+                        print('count is increased by 1, count:', count)
+                        return Response({
+                            'status': True,
+                            'detail': 'OTP sent successfully and created'
+                        })
+                    
+                    else:
+                        PhoneOTP.objects.create(
+                            phone=phone,
+                            otp=key,
+                        )
+                        return Response({
+                            'status': True,
+                            'detail': 'OTP sent successfully and created'
+                        })
 
                 else:
                     return Response({
