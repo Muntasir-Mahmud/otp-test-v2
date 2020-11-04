@@ -89,6 +89,7 @@ class PhoneOTP(models.Model):
     phone = models.CharField(validators=[phone_regex], max_length=17, unique=True)
     otp = models.CharField(max_length = 9, blank = True, null= True)
     count = models.IntegerField(default = 0, help_text = 'Number of otp sent')
+    validate = models.BooleanField(default=False, help_text='If it is true, that means user have validate OTP correctly')
 
     def __str__(self):
         return str(self.phone) + ' is sent ' + str(self.otp)
