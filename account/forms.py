@@ -1,41 +1,28 @@
 from django import forms
 from django.contrib.auth.forms import ReadOnlyPasswordHashField
 
-from .models import User 
-class LoginForm(forms.Form):
-    phone = forms.IntegerField(label = 'Your Phone Number')
-    password = forms.CharField(widget = forms.PasswordInput)
+from .models import User, PhoneOTP
 
 
-class VerifyForm(forms.Form):
-    key = forms.IntegerField(label = 'Please Enter OTP here')
-    
+class VerifyOTPForm(forms.ModelForm):
+
+    class Meta:
+        model = PhoneOTP
+        fields = ('phone', 'otp',)
 
 
-class RegisterForm(forms.ModelForm):
-    password = forms.CharField(widget=forms.PasswordInput)
-    password2 = forms.CharField(label='Confirm password', widget=forms.PasswordInput)
+class VerifyPhoneForm(forms.ModelForm):
 
     class Meta:
         model = User
         fields = ('phone',)
 
-    def clean_phone(self):
-        phone = self.cleaned_data.get('phone')
-        qs = User.objects.filter(phone=phone)
-        if qs.exists():
-            raise forms.ValidationError("phone is taken")
-        return phone
 
-    def clean_password2(self):
-        # Check that the two password entries match
-        password1 = self.cleaned_data.get("password1")
-        password2 = self.cleaned_data.get("password2")
-        if password1 and password2 and password1 != password2:
-            raise forms.ValidationError("Passwords don't match")
-        return password2
+class RegisterForm(forms.ModelForm):
 
-
+    class Meta:
+        model = User
+        fields = ('phone', 'password',)
 
 
 class TempRegisterForm(forms.Form):
